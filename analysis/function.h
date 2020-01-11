@@ -1,5 +1,5 @@
 #pragma once
-#include "../XYHeadFile/xy.h"
+#include "../../CPP_HEAD/XYHeadFile/xy.h"
 using namespace std;
 vector <double> GetACF(const vector <Vector> &y_list, double dt, vector <double> &t_list){
 	vector <double> _t_list;
