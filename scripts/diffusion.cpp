@@ -1,6 +1,6 @@
-#include "../CPP_HEAD//XYHeadFile/xy.h"
+#include "../../CPP_HEAD/XYHeadFile/xy.h"
 #include "../traj/trajectory.h"
-#include "function.h"
+#include "../analysis/function.h"
 
 void GetACFandDiffusionConstant(const vector <double> &t_list, const vector <vector <double>> &_acf_list, const vector <string> &mol_name_list, const string mol_name){
     vector <vector <double>> _acf_list_new;
@@ -65,7 +65,7 @@ int main(int argc, char **argv){
     vector <double> t_list;
     printf("\nCalculate auto-correlation function\n");
     for(unsigned int i=0;i<velocity.size();++i){
-        printf("\r%d / %d", i+1, velocity.size());
+        printf("\r%d / %ld", i+1, velocity.size());
         _acf_list.push_back(GetACF(velocity[i], dt, t_list));
     }
     GetACFandDiffusionConstant(t_list, _acf_list, mol_name_list, "System");

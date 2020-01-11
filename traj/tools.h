@@ -1,6 +1,6 @@
 #pragma once
 using namespace std;
-#include "../XYHeadFile/xy.h"
+#include "../../CPP_HEAD/XYHeadFile/xy.h"
 double get_distance(const Vector x, const Vector y, const Vector BoxR){
     Vector dr = x-y;
     if(dr[0] > BoxR[0] / 2)

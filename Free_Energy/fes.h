@@ -8,7 +8,7 @@ class FreeEnergySurface{
         FreeEnergySurface(const std::vector <double> &lower_bounds_, const std::vector <double> &upper_bounds_, 
             const std::vector <bool> &periodicities_, const std::vector <unsigned int> &bins_);
         void AddGaussian(const Gaussian &hill);
-        void AddGaussian(const Gaussian &hill, bool MPC_correction);
+        void AddGaussian(const Gaussian &hill, bool MPC_correction, double bias_factor);
         void WriteFES(std::string filename) const;
 
     private:
@@ -56,17 +56,20 @@ const std::vector <bool> &periodicities_, const std::vector <unsigned int> &bins
 
 void FreeEnergySurface::AddGaussian(const Gaussian &hill){
     for(unsigned int i=0;i<cv.size();++i){
-        fe[i] += hill.evaluateGaussian(cv[i], lower_bounds, upper_bounds, periodicities, false);
+        fe[i] += - hill.evaluateGaussian(cv[i], lower_bounds, upper_bounds, periodicities, false);
     }
 }
 
-void FreeEnergySurface::AddGaussian(const Gaussian &hill, bool MPC_correction){
+void FreeEnergySurface::AddGaussian(const Gaussian &hill, bool MPC_correction, double bias_factor){
     for(unsigned int i=0;i<cv.size();++i){
-        fe[i] += hill.evaluateGaussian(cv[i], lower_bounds, upper_bounds, periodicities, MPC_correction);
+        if (bias_factor > 1.)
+            fe[i] += - bias_factor / (bias_factor - 1) * hill.evaluateGaussian(cv[i], lower_bounds, upper_bounds, periodicities, MPC_correction);
+        else
+            fe[i] += - hill.evaluateGaussian(cv[i], lower_bounds, upper_bounds, periodicities, MPC_correction);
     }
 }
 
-void FreeEnergySurface::WriteFES(string filename) const{
+void FreeEnergySurface::WriteFES(std::string filename) const{
     FILE *fp = fopen(filename.c_str(), "w");
     for(unsigned int i=0;i<cv.size();++i){
         for(unsigned int j=0;j<cv[i].size();++j){

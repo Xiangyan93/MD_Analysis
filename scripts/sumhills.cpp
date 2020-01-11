@@ -4,6 +4,7 @@ int main(int argc, char **argv){
     FILE *fp = fopen(argv[1], "r");
     // Read HILLS file
     vector <Gaussian> hills;
+    vector <double> bias_factors;
     char p[1000];
     string split_symbol = " \t\n";
     while(fgets(p, 1000, fp)){
@@ -16,6 +17,7 @@ int main(int argc, char **argv){
                 new_hill.sigma.push_back(anything2double(sp[i+1+dimension]));
             }
             new_hill.height = anything2double(dimension * 2 + 1);
+            bias_factors.push_back(anything2double(dimension * 2 + 2));
             hills.push_back(new_hill);
         }
 	}
@@ -29,7 +31,7 @@ int main(int argc, char **argv){
     unsigned int stride = anything2usint(argv[7]);
     FreeEnergySurface fes(lower_bounds, upper_bounds, periodicities, bins);
     for(unsigned int i=0;i<hills.size();++i){
-        fes.AddGaussian(hills[i], MPC_correction);
+        fes.AddGaussian(hills[i], MPC_correction, bias_factors[i]);
         if(i%stride == 0) fes.WriteFES("fes_" + anything2str(i) + ".dat");
     }
 }

@@ -1,6 +1,6 @@
 #pragma once
 using namespace std;
-#include "../XYHeadFile/xy.h"
+#include "../../CPP_HEAD/XYHeadFile/xy.h"
 double name2mass(string name){
     map<string, double> element2mass;
     element2mass.insert(pair<string, double>("H", 1.00794));
