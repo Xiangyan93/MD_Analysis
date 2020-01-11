@@ -1,4 +1,4 @@
-#include "../XYHeadFile/xy.h"
+#include "../CPP_HEAD//XYHeadFile/xy.h"
 #include "../traj/trajectory.h"
 
 int main(int argc, char **argv){
