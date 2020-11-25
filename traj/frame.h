@@ -1,10 +1,10 @@
-#ifndef Frame_h
-#define Frame_h
+#pragma once
 #include "molecule.h"
 #include "tools.h"
 class Frame{
     public:
         void CenterOfMassTransform();
+        void Sanitize();
         vector <double> get_rdf(const string &center, const string &surround);
         vector <double> get_rdf(const string &center, const string &surround, const double &dx, const double&cutoff);      
         vector <string> get_distinct_mol_name_list();
@@ -12,6 +12,8 @@ class Frame{
 
     	vector <Molecule> molecules;
         vector <Atom> coms;
+        Vector BoxR_U;
+        Vector BoxR_L;
 		Vector BoxR;
         double time;
     
@@ -25,6 +27,14 @@ void Frame::CenterOfMassTransform(){
     for(unsigned i=0;i<molecules.size();++i){
         coms.push_back(molecules[i].get_center_of_mass());
     }
+}
+
+void Frame::Sanitize(){
+    for(unsigned int i=0;i<coms.size();++i){
+        coms[i].x -= BoxR_L;
+    }
+    BoxR_U -= BoxR_L;
+    BoxR_L[0] = BoxR_L[1] = BoxR_L[2] == 0.;
 }
 
 double Frame::volume(){
@@ -46,11 +56,11 @@ vector <double> Frame::get_rdf(const string &center, const string &surround, con
     if(center==surround){
         unsigned int atom_number = 0;
         for(unsigned int i=0;i<coms.size();++i){
-            if(coms[i].name != center)
+            if(coms[i].element != center)
                 continue;
             atom_number += 1;
             for(unsigned int j=i+1;j<coms.size();++j){
-                if(coms[j].name != surround)
+                if(coms[j].element != surround)
                     continue;
                 double dr = get_distance(coms[i].x, coms[j].x, BoxR);
                 if(dr<cutoff){
@@ -67,11 +77,11 @@ vector <double> Frame::get_rdf(const string &center, const string &surround, con
         unsigned int atom_number_center = 0;
         unsigned int atom_number_surround = 0;
         for(unsigned int i=0;i<coms.size();++i){
-            if(coms[i].name != center)
+            if(coms[i].element != center)
                 continue;
             atom_number_center += 1;
             for(unsigned int j=0;j<coms.size();++j){
-                if(coms[j].name != surround)
+                if(coms[j].element != surround)
                     continue;
                 atom_number_surround += 1;
                 double dr = get_distance(coms[i].x, coms[j].x, BoxR);
@@ -92,5 +102,3 @@ vector <double> Frame::get_rdf(const string &center, const string &surround, con
 vector <double> Frame::get_rdf(const string &center, const string &surround){
     return get_rdf(center, surround, 0.01, 10.0);
 }
-
-#endif

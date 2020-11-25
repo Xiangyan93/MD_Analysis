@@ -1,5 +1,4 @@
-#ifndef Molecule_h
-#define Molecule_h
+#pragma once
 #include "atom.h"
 class Molecule{
     public:
@@ -7,14 +6,15 @@ class Molecule{
         double get_e2e_distance();
         double get_gyration();
 
-        vector <Atom> atoms;
-        string name;
+        std::vector <Atom> atoms;
+        std::string name;
     private:
 };
 
 Atom Molecule::get_center_of_mass(){
+    /*
     Atom com;
-    com.name = name;
+    com.element = name;
     for(unsigned i=0;i<atoms.size();++i){
         com.mass += atoms[i].mass;
         com.x += atoms[i].x * atoms[i].mass;
@@ -23,7 +23,9 @@ Atom Molecule::get_center_of_mass(){
     com.x /= com.mass;
     com.v /= com.mass;
     return com;
+    */
 }
+
 double Molecule::get_e2e_distance(){
     return 0.;
 }
@@ -31,4 +33,3 @@ double Molecule::get_e2e_distance(){
 double Molecule::get_gyration(){
     return 0.;
 }
-#endif

@@ -10,10 +10,11 @@ class Trajectory{
         FILE *traj_file;
         string traj_file_name;
         Frame ReadGroFrame();
+		Frame ReadLammpsFrame();
+		Frame ReadLammpsDataFrame();
 };
 
 Trajectory::Trajectory(const string file_name){
-	
     traj_file_name = file_name;
     traj_file = fopen(file_name.c_str(), "r");
 
@@ -36,6 +37,9 @@ Frame Trajectory::ReadFrame(){
     if (sp.back() == "gro") {
         return ReadGroFrame();
     }
+	else if (sp.back() == "lammpstrj") {
+		return ReadLammpsFrame();
+	}
 }
 
 Frame Trajectory::ReadGroFrame(){
@@ -102,7 +106,98 @@ Frame Trajectory::ReadGroFrame(){
 	sp = split(string(p), split_symbol);
 	if (sp.size() == 3) {
 		Vector BoxR(atof(sp[0].c_str()), atof(sp[1].c_str()), atof(sp[2].c_str()));
-		frame.BoxR = BoxR;
+		Vector zero(0., 0., 0.);
+		frame.BoxR_L = zero;
+		frame.BoxR_U = BoxR;
 	}
+	else {
+		
+	}
+	frame.Sanitize();
 	return frame;
+}
+
+Frame Trajectory::ReadLammpsFrame(){
+	Frame frame;
+	bool velocity = false;
+	Molecule mol;
+    char p[1000];
+	// 
+	fgets(p, 1000, traj_file);
+	printf("%s", p);
+	assert(p == "ITEM: TIMESTEP\n");
+	fgets(p, 1000, traj_file);
+	frame.time = atof(p);
+	// 
+	fgets(p, 1000, traj_file);
+	assert(p == "ITEM: NUMBER OF ATOMS\n");
+	fgets(p, 1000, traj_file);
+	unsigned int atom_number = atoi(p);
+	//
+	string split_symbol = " \t\n";
+	fgets(p, 1000, traj_file);
+	assert(p == "ITEM: BOX BOUNDS pp pp pp\n");
+	for (unsigned int i = 0; i < 3; ++i) {
+		fgets(p, 1000, traj_file);
+		vector <string> sp = split(p, split_symbol);
+		frame.BoxR_L[i] = atof(sp[0].c_str());
+		frame.BoxR_U[i] = atof(sp[1].c_str());
+	}
+
+	fgets(p, 1000, traj_file);
+	vector <string> sp = split(p, split_symbol);
+	assert(sp[0] == "ITEM:" && sp[1] == "ATOMS");
+	vector<string>::const_iterator first = sp.begin() + 2;
+	vector<string>::const_iterator last = sp.end();
+	vector <string> columns(first, last);
+
+	vector <Atom> atoms;
+	unsigned int molecule_number = 0;
+	for (unsigned i = 0; i < atom_number; ++i) {
+		fgets(p, 1000, traj_file);
+		sp = split(p, split_symbol);
+		assert(sp.size() == columns.size());
+		Atom atom;
+		for(unsigned int j = 0; j < columns.size(); ++j){
+			switch (hashstring(columns[j].c_str())) {
+				case hashstring("id"):
+					atom.id = atoi(sp[j].c_str());
+				case hashstring("type"):
+					atom.type = sp[j];
+				case hashstring("element"):
+					atom.set_element(sp[j]);
+				case hashstring("mol"):
+					atom.mol_id = atoi(sp[j].c_str());
+					if (atom.mol_id > molecule_number) {
+						molecule_number = atom.mol_id;
+					}
+				case hashstring("x"):
+					atom.x[0] = atof(sp[j].c_str());
+				case hashstring("y"):
+					atom.x[1] = atof(sp[j].c_str());
+				case hashstring("z"):
+					atom.x[2] = atof(sp[j].c_str());					
+				case hashstring("vx"):
+					atom.v[0] = atof(sp[j].c_str());
+				case hashstring("vy"):
+					atom.v[1] = atof(sp[j].c_str());
+				case hashstring("vz"):
+					atom.v[2] = atof(sp[j].c_str());										
+			}
+		}
+		atoms.push_back(atom);
+	}
+	vector <Molecule> mols(molecule_number);
+	for (unsigned i = 0; i < atom_number; ++i) {
+		mols[atoms[i].mol_id - 1].atoms.push_back(atoms[i]);
+	}
+	for (unsigned i = 0; i < mols.size(); ++i) {
+		frame.molecules.push_back(mols[i]);
+	}
+	frame.Sanitize();
+	return frame;
+}
+
+Frame Trajectory::ReadLammpsDataFrame() {
+
 }
