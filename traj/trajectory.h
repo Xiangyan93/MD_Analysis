@@ -98,6 +98,9 @@ Frame Trajectory::ReadGroFrame(){
 		mol.name = sp[1];
 		mol.atoms.push_back(atom);
 	}
+	if(mol.atoms.size() != 0){
+		frame.molecules.push_back(mol);
+	}
 	fgets(p, 1000, traj_file);
 	sp = split(string(p), split_symbol);
 	if (sp.size() == 3) {

@@ -38,7 +38,7 @@ double name2mass(string name){
 		return key->second;
 	}
     else{
-        return 0.;
+        return 1.;
     }
 }
 
